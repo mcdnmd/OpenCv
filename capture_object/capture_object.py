@@ -11,6 +11,20 @@ def create_mask(frame):
     return cv2.inRange(hsv, lower_bound, upper_bound)
 
 
+def draw_contours(contours, frame, mask):
+    for contour in contours:
+        if cv2.contourArea(contour) > 1000:
+            x, y, w, h = cv2.boundingRect(contour)
+            cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0))
+            cv2.rectangle(mask, (x, y), (x + w, y + h), (255, 0, 0))
+
+
+def show(frame, mask):
+    mask_BGR = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
+    one_image = np.hstack((frame, mask_BGR))
+    cv2.imshow('View', one_image)
+
+
 def main():
     if FILE_PATH != '':
         cap = cv2.VideoCapture(FILE_PATH)
@@ -25,11 +39,9 @@ def main():
             mask = create_mask(frame)
             contours, hierarchy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             if len(contours) != 0:
-                for contour in contours:
-                    if cv2.contourArea(contour) > 1000:
-                        x, y, w, h = cv2.boundingRect(contour)
-                        cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0))
-            cv2.imshow('lol', frame)
+                draw_contours(contours, frame, mask)
+
+            show(frame, mask)
             if cv2.waitKey(1) == ord('q'):
                 break
         else:
